@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Malla Curricular Interactiva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fff;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #004080;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+    .container {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 1rem;
+    }
+    .semester {
+      background-color: #f0f4ff;
+      border: 2px solid #004080;
+      border-radius: 1rem;
+      padding: 1rem;
+      min-width: 260px;
+      flex: 0 0 auto;
+    }
+    .semester h2 {
+      text-align: center;
+      color: #004080;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+    .course {
+      background-color: #d6e4ff;
+      border: 1px solid #004080;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      margin-bottom: 0.7rem;
+      font-size: 0.95rem;
+      text-align: center;
+      color: #002855;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .course.locked {
+      opacity: 0.4;
+    }
+    button {
+      background-color: #004080;
+      color: white;
+      border: none;
+      border-radius: 0.4rem;
+      padding: 0.4rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button:disabled {
+      background-color: #7a9bc9;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular Interactiva</h1>
+  <div class="container" id="malla-container"></div>
+
+<script>
+  // Datos completos con prerrequisitos (según tu listado)
+  const malla = [
+    { semestre: 1, cursos: [
+      { name: "ADMINISTRACIÓN", prereq: [] },
+      { name: "ÁLGEBRA", prereq: [] },
+      { name: "EXPRESIÓN ORAL Y ESCRITA", prereq: [] },
+      { name: "ENTORNO ECONÓMICO SOCIAL Y POLÍTICO", prereq: [] },
+      { name: "TALLER DE TIC’S", prereq: [] },
+      { name: "HABILIDADES RELACIONALES I", prereq: [] },
+      { name: "INTRODUCCIÓN AL INGLÉS", prereq: [] }
+    ]},
+    { semestre: 2, cursos: [
+      { name: "CONTABILIDAD INTRODUCTORIA", prereq: [] },
+      { name: "TALLER DE EMPRENDIMIENTO", prereq: ["ADMINISTRACIÓN"] },
+      { name: "ADMINISTRACIÓN PARA LA TOMA DE DECISIONES", prereq: ["ADMINISTRACIÓN", "ENTORNO ECONÓMICO SOCIAL Y POLÍTICO"] },
+      { name: "COMUNICACIÓN EN INGLÉS I", prereq: ["INTRODUCCIÓN AL INGLÉS"] },
+      { name: "EDUCACIÓN FÍSICA Y SALUD", prereq: [] },
+      { name: "INTRODUCCIÓN A LA ECONOMÍA", prereq: ["ENTORNO ECONÓMICO SOCIAL Y POLÍTICO"] },
+      { name: "CÁLCULO I", prereq: ["ÁLGEBRA"] }
+    ]},
+    { semestre: 3, cursos: [
+      { name: "CONTABILIDAD FINANCIERA", prereq: ["CONTABILIDAD INTRODUCTORIA"] },
+      { name: "COSTOS PARA LA TOMA DE DECISIONES", prereq: ["CONTABILIDAD INTRODUCTORIA"] },
+      { name: "COMUNICACIÓN EN INGLÉS II", prereq: ["COMUNICACIÓN EN INGLÉS I"] },
+      { name: "ELECTIVO DE BACHILLERATO 1", prereq: [] },
+      { name: "MICROECONOMÍA I", prereq: ["INTRODUCCIÓN A LA ECONOMÍA", "CÁLCULO I"] },
+      { name: "CÁLCULO II", prereq: ["CÁLCULO I"] }
+    ]},
+    { semestre: 4, cursos: [
+      { name: "INGENIERÍA ECONÓMICA", prereq: ["CÁLCULO I", "CONTABILIDAD INTRODUCTORIA"] },
+      { name: "COMUNICACIÓN EN INGLÉS III", prereq: ["COMUNICACIÓN EN INGLÉS II"] },
+      { name: "DERECHO COMERCIAL Y LABORAL", prereq: ["ADMINISTRACIÓN PARA LA TOMA DE DECISIONES"] },
+      { name: "ELECTIVO DE BACHILLERATO 2", prereq: [] },
+      { name: "SEMINARIO INTEGRADO DE BACHILLERATO", prereq: ["TALLER DE EMPRENDIMIENTO", "ADMINISTRACIÓN PARA LA TOMA DE DECISIONES", "MICROECONOMÍA I"] },
+      { name: "ESTADÍSTICA I", prereq: ["CÁLCULO II"] },
+      { name: "MICROECONOMÍA II", prereq: ["MICROECONOMÍA I"] }
+    ]},
+    { semestre: 5, cursos: [
+      { name: "RELACIONES LABORALES Y MERCADO DEL TRABAJO", prereq: ["INTRODUCCIÓN A LA ECONOMÍA", "DERECHO COMERCIAL Y LABORAL"] },
+      { name: "GESTIÓN FINANCIERA", prereq: ["INGENIERÍA ECONÓMICA", "COSTOS PARA LA TOMA DE DECISIONES"] },
+      { name: "COMUNICACIÓN EN INGLÉS IV", prereq: ["COMUNICACIÓN EN INGLÉS III"] },
+      { name: "ESTADÍSTICA II", prereq: ["ESTADÍSTICA I"] },
+      { name: "MÉTODOS DE OPTIMIZACIÓN", prereq: ["CÁLCULO I", "ESTADÍSTICA I"] },
+      { name: "MACROECONOMÍA I", prereq: ["MICROECONOMÍA I"] }
+    ]},
+    { semestre: 6, cursos: [
+      { name: "FINANZAS CORPORATIVAS", prereq: ["GESTIÓN FINANCIERA"] },
+      { name: "MARKETING", prereq: [] },
+      { name: "COMUNICACIÓN EN INGLÉS V", prereq: ["COMUNICACIÓN EN INGLÉS IV"] },
+      { name: "DERECHO TRIBUTARIO", prereq: ["DERECHO COMERCIAL Y LABORAL"] },
+      { name: "OPTATIVO PROFESIONAL 1", prereq: [] },
+      { name: "OPTATIVO PROFESIONAL 2", prereq: [] },
+      { name: "MACROECONOMÍA II", prereq: ["MACROECONOMÍA I"] }
+    ]},
+    { semestre: 7, cursos: [
+      { name: "GESTIÓN DEL TALENTO HUMANO", prereq: [] },
+      { name: "MARKETING AVANZADO", prereq: ["MARKETING"] },
+      { name: "ADMINISTRACIÓN DE OPERACIONES", prereq: [] },
+      { name: "OPTATIVO PROFESIONAL 3", prereq: [] },
+      { name: "TRABAJO DE GRADUACIÓN LICENCIATURA I", prereq: [] },
+      { name: "ECONOMETRÍA I", prereq: [] }
+    ]},
+    { semestre: 8, cursos: [
+      { name: "MARKETING INTERNACIONAL", prereq: ["MARKETING AVANZADO"] },
+      { name: "FINANZAS INTERNACIONALES", prereq: ["FINANZAS CORPORATIVAS"] },
+      { name: "SEMINARIO INTEGRADO DE LICENCIATURA", prereq: [] },
+      { name: "TRABAJO DE GRADUACIÓN LICENCIATURA II", prereq: ["TRABAJO DE GRADUACIÓN LICENCIATURA I"] },
+      { name: "ECONOMÍA DE RECURSOS NATURALES", prereq: [] },
+      { name: "ECONOMETRÍA II", prereq: ["ECONOMETRÍA I"] }
+    ]},
+    { semestre: 9, cursos: [
+      { name: "NEGOCIOS INTERNACIONALES", prereq: [] },
+      { name: "PREPARACIÓN Y EVALUACIÓN DE PROYECTOS", prereq: [] },
+      { name: "SEMINARIO DE FINANZAS", prereq: ["FINANZAS CORPORATIVAS"] },
+      { name: "DIRECCIÓN ESTRATÉGICA", prereq: [] },
+      { name: "EMPRESAS Y SOCIEDAD", prereq: [] },
+      { name: "HABILIDADES RELACIONALES II", prereq: [] },
+      { name: "ORGANIZACIÓN INDUSTRIAL Y TEORÍA DE JUEGOS", prereq: [] }
+    ]},
+    { semestre: 10, cursos: [
+      { name: "PROYECTO DE TÍTULO: CONSULTORIA DE EMPRESAS", prereq: [] },
+      { name: "SISTEMAS Y TECNOLOGÍAS DE INFORMACIÓN", prereq: [] },
+      { name: "PRÁCTICA PROFESIONAL", prereq: [] }
+    ]}
+  ];
+
+  // Estado guardado en sessionStorage para persistencia en sesión
+  let estadoCursos = JSON.parse(sessionStorage.getItem("estadoCursos") || "{}");
+
+  const container = document.getElementById("malla-container");
+
+  function puedeDesbloquear(curso) {
+    if (curso.prereq.length === 0) return true;
+    return curso.prereq.every((pr) => estadoCursos[pr]);
+  }
+
+  function render() {
+    container.innerHTML = "";
+    malla.forEach(({ semestre, cursos }) => {
+      const semDiv = document.createElement("div");
+      semDiv.className = "semester";
+
+      const title = document.createElement("h2");
+      title.textContent = `${semestre}° Semestre`;
+      semDiv.appendChild(title);
+
+      cursos.forEach((curso) => {
+        const courseDiv = document.createElement("div");
+        courseDiv.className = "course";
+
+        const aprobado = !!estadoCursos[curso.name];
+        const desbloqueado = puedeDesbloquear(curso);
+
+        if (!desbloqueado && !aprobado) {
+          courseDiv.classList.add("locked");
+        }
+
+        const nombreCurso = document.createElement("div");
+        nombreCurso.textContent = curso.name;
+        courseDiv.appendChild(nombreCurso);
+
+        const btn = document.createElement("button");
+        btn.textContent = aprobado ? "Aprobado" : "Marcar aprobado";
+        btn.disabled = !desbloqueado && !aprobado;
+
+        btn.addEventListener("click", () => {
+          estadoCursos[curso.name] = true;
+          sessionStorage.setItem("estadoCursos", JSON.stringify(estadoCursos));
+          render();
+        });
+
+        courseDiv.appendChild(btn);
+        semDiv.appendChild(courseDiv);
+      });
+
+      container.appendChild(semDiv);
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>
